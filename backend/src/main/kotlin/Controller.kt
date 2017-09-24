@@ -1,4 +1,5 @@
 
+import display.Oled
 import org.jetbrains.ktor.host.embeddedServer
 import org.jetbrains.ktor.http.ContentType
 import org.jetbrains.ktor.netty.Netty
@@ -17,6 +18,7 @@ fun main(args: Array<String>) {
     var pidController = PID(200, 0)
     var boilerController = Boiler()
     var machineController = Machine()
+    var display = Oled()
     var powerState = false
 
     embeddedServer(Netty, 8080) {
@@ -51,6 +53,9 @@ fun main(args: Array<String>) {
                 }else {
                     call.respondText("Off", ContentType.Text.Html)
                 }
+            }
+            get("/api/display/test/{content}") {
+                display.displayTest("Hello world")
             }
         }
     }.start(wait = true)

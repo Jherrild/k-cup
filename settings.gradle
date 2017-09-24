@@ -1,4 +1,3 @@
-rootProject.name = 'cloudmage'
+rootProject.name = 'k-cup'
 include 'frontend'
 include 'backend'
-
