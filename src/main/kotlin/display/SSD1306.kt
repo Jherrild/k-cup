@@ -406,7 +406,7 @@ class SSD1306
         for (i in data.indices) {
             graphics.drawString(data[i], 0, constants.STRING_HEIGHT * (i + 1))
         }
-        displayImage()
+        //displayImage()
     }
 
     /**
@@ -418,7 +418,7 @@ class SSD1306
         for (i in data.indices) {
             graphics.drawString(data[i], x, y + (h * (i + 1)))
         }
-        displayImage()
+        //displayImage()
     }
 
     /**
@@ -428,7 +428,7 @@ class SSD1306
         for (i in 0 until width - 1) {
             setPixel(i, position, true)
         }
-        display()
+        //display()
     }
 
     /**
@@ -438,7 +438,7 @@ class SSD1306
         for (i in 0 until height - 1) {
             setPixel(position, i, true)
         }
-        display()
+        //display()
     }
 
     /**
@@ -448,7 +448,7 @@ class SSD1306
         for (i in x1 until x2 - 1) {
             setPixel(y, i, true)
         }
-        display()
+        //display()
     }
 
     /**
@@ -458,7 +458,7 @@ class SSD1306
         for (i in y1 until y2) {
             setPixel(x, i, true)
         }
-        display()
+        //display()
     }
 
     private fun i2cWrite(register: Int, value: Int) {
