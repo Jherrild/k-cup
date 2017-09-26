@@ -16,15 +16,21 @@ import org.jetbrains.ktor.routing.routing
  * @author jestenh@gmail.com
  * Created on 8/22/17
  */
+var gpio = GpioFactory.getInstance()
+
+var pidController = PID(200, 0)
+var boilerController = Boiler()
+var machineController = Machine()
+var displayController = Display(gpio = gpio)
+var powerState = false
+
 fun main(args: Array<String>) {
-    var gpio = GpioFactory.getInstance()
-
-    var pidController = PID(200, 0)
-    var boilerController = Boiler()
-    var machineController = Machine()
-    var displayController = Display(gpio = gpio)
-    var powerState = false
-
+    displayController.init()
+    displayController.write("Set: " + pidController.setTemp.toString(), 5)
+    displayController.write("Temp: " + pidController.currentTemp.toString(), 69)
+    displayController.vSegment(64, 0, 18)
+    displayController.hLine(18)
+    displayController.update()
 
     embeddedServer(Netty, 50505) {
         routing {
@@ -59,14 +65,41 @@ fun main(args: Array<String>) {
                     call.respondText("Off", ContentType.Text.Html)
                 }
             }
-            get("/api/display/test") {
-                displayController.displayTest("Hello world")
+            get("/api/display") {
+                displayController.write("Hello world")
+                displayController.update()
                 call.respondText("Hello world", ContentType.Text.Html)
             }
             get("/api/display/{content}") {
                 val content = call.parameters["content"].toString()
-                displayController.displayTest(content)
+                displayController.write(content)
+                displayController.update()
                 call.respondText(content, ContentType.Text.Html)
+            }
+            get("/api/display/clear") {
+                displayController.clear()
+                displayController.update()
+                call.respondText("Cleared Display", ContentType.Text.Html)
+            }
+            get("/api/display/vline/{index}") {
+                val value = call.parameters["index"]!!.toInt()
+                call.respondText("Attempted to draw a line at '${value}'", ContentType.Text.Html)
+                displayController.vLine(value)
+                displayController.update()
+            }
+            get("/api/display/hline/{index}") {
+                val value = call.parameters["index"]!!.toInt()
+                call.respondText("Attempted to draw a line at '${value}'", ContentType.Text.Html)
+                displayController.hLine(value)
+                displayController.update()
+            }
+            get("/api/display/update") {
+                call.respondText("Updating screen", ContentType.Text.Html)
+                displayController.write("Set: " + pidController.setTemp.toString(), 5)
+                displayController.write("Temp: " + pidController.currentTemp.toString(), 69)
+                displayController.vSegment(64, 0, 18)
+                displayController.hLine(18)
+                displayController.update()
             }
         }
     }.start(wait = true)

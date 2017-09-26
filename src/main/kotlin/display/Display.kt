@@ -17,9 +17,44 @@ class Display(address: Int = 0x3c,
 
     var display = SSD1306(constants.LCD_WIDTH_128, constants.LCD_HEIGHT_64, gpio, i2c, address)
 
-    fun displayTest(content: String) {
+    fun init() {
         display.begin()
-        display.displayString(content)
+    }
+
+    fun clear() {
+        display.clear()
         display.display()
+    }
+
+    fun update() {
+        display.display()
+    }
+
+    fun write(content: String, x: Int = 0, y: Int = 0) {
+        display.addString(content, x=x, y=y)
+    }
+
+    fun write(content: String, x: Int = 0, y: Int = 0, h: Int) {
+        display.addString(content, x=x, y=y, h=h)
+    }
+
+    fun vLine(index: Int) {
+        display.verticalLine(index)
+    }
+
+    fun hLine(index: Int) {
+        display.horizontalLine(index)
+    }
+
+    fun hSegment(index: Int, x1: Int, x2: Int) {
+        display.horizontalSegment(index, x1, x2)
+    }
+
+    fun vSegment(index: Int, y1: Int, y2: Int) {
+        display.verticalSegment(index, y1, y2)
+    }
+
+    fun pixel(x: Int, y: Int) {
+        display.setPixel(x, y, true)
     }
 }

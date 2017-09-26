@@ -409,9 +409,54 @@ class SSD1306
         displayImage()
     }
 
+    /**
+     * Displays the string sent in but does not clear the screen
+     * @param data
+     * @param line
+     */
+    fun addString(vararg data: String, x: Int = 0, y: Int = 0, h: Int = constants.STRING_HEIGHT) {
+        for (i in data.indices) {
+            graphics.drawString(data[i], x, y + (h * (i + 1)))
+        }
+        displayImage()
+    }
+
+    /**
+     * Displays a horizontal line at the requested x coordinate
+     */
     fun horizontalLine(position: Int) {
-        for (i in 0..width - 1) {
+        for (i in 0 until width - 1) {
             setPixel(i, position, true)
+        }
+        display()
+    }
+
+    /**
+     * Displays a vertical line at the requested y coordinate
+     */
+    fun verticalLine(position: Int) {
+        for (i in 0 until height - 1) {
+            setPixel(position, i, true)
+        }
+        display()
+    }
+
+    /**
+    * Displays a horizontal line segment
+    */
+    fun horizontalSegment(y: Int, x1: Int, x2: Int) {
+        for (i in x1 until x2 - 1) {
+            setPixel(y, i, true)
+        }
+        display()
+    }
+
+    /**
+     * Displays a vertical line segment
+     */
+    fun verticalSegment(x: Int, y1: Int, y2: Int) {
+        for (i in y1 until y2) {
+            setPixel(x, i, true)
         }
         display()
     }
