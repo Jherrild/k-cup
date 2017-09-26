@@ -3,14 +3,13 @@ package main.kotlin
 import com.pi4j.io.gpio.GpioFactory
 import main.kotlin.display.Display
 import main.kotlin.power.Boiler
-import main.kotlin.power.Machine
-import main.kotlin.temp.PID
 import org.jetbrains.ktor.host.embeddedServer
 import org.jetbrains.ktor.http.ContentType
 import org.jetbrains.ktor.netty.Netty
 import org.jetbrains.ktor.response.respondText
 import org.jetbrains.ktor.routing.get
 import org.jetbrains.ktor.routing.routing
+import kotlin.concurrent.fixedRateTimer
 
 /**
  * @author jestenh@gmail.com
@@ -18,32 +17,33 @@ import org.jetbrains.ktor.routing.routing
  */
 var gpio = GpioFactory.getInstance()
 
-var pidController = PID(200, 0)
-var boilerController = Boiler()
-var machineController = Machine()
-var displayController = Display(gpio = gpio)
+var boiler = Boiler()
+var display = Display(gpio = gpio)
 var powerState = false
 
 fun main(args: Array<String>) {
-    displayController.init()
-    displayController.write("Set: " + pidController.setTemp.toString(), 5)
-    displayController.write("Temp: " + pidController.currentTemp.toString(), 69)
-    displayController.vSegment(64, 0, 18)
-    displayController.hLine(18)
-    displayController.update()
+    boiler.init()
+    display.init()
+    fixedRateTimer("Display Update", true, 0.toLong(), 200.toLong()) {
+        display.write("Set: " + boiler.pid.setTemp.toString(), 5)
+        display.write("Temp: " + boiler.pid.currentTemp.toString(), 69)
+        display.vSegment(64, 0, 18)
+        display.hLine(18)
+        display.update()
+    }
 
     embeddedServer(Netty, 50505) {
         routing {
             get("/api/temperature/brew/target") {
-                call.respondText("${pidController.setTemp}", ContentType.Text.Html)
+                call.respondText("${boiler.pid.setTemp}", ContentType.Text.Html)
             }
             get("/api/temperature/brew/target/{temp}") {
                 val newTemp = call.parameters["temp"]?.toInt()
-                pidController.setTemp = newTemp!!
-                call.respondText("Set temperature to ${pidController.setTemp}", ContentType.Text.Html)
+                boiler.pid.setTemp = newTemp!!
+                call.respondText("Set temperature to ${boiler.pid.setTemp}", ContentType.Text.Html)
             }
             get("/api/temperature/brew/current") {
-                call.respondText("${pidController.currentTemp}", ContentType.Text.Html)
+                call.respondText("${boiler.pid.currentTemp}", ContentType.Text.Html)
             }
             get("/api/power") {
                 if (powerState) {
@@ -66,40 +66,40 @@ fun main(args: Array<String>) {
                 }
             }
             get("/api/display") {
-                displayController.write("Hello world")
-                displayController.update()
+                display.write("Hello world")
+                display.update()
                 call.respondText("Hello world", ContentType.Text.Html)
             }
             get("/api/display/{content}") {
                 val content = call.parameters["content"].toString()
-                displayController.write(content)
-                displayController.update()
+                display.write(content)
+                //display.update()
                 call.respondText(content, ContentType.Text.Html)
             }
             get("/api/display/clear") {
-                displayController.clear()
-                displayController.update()
+                display.clear()
+                //display.update()
                 call.respondText("Cleared Display", ContentType.Text.Html)
             }
             get("/api/display/vline/{index}") {
                 val value = call.parameters["index"]!!.toInt()
                 call.respondText("Attempted to draw a line at '${value}'", ContentType.Text.Html)
-                displayController.vLine(value)
-                displayController.update()
+                display.vLine(value)
+                //display.update()
             }
             get("/api/display/hline/{index}") {
                 val value = call.parameters["index"]!!.toInt()
                 call.respondText("Attempted to draw a line at '${value}'", ContentType.Text.Html)
-                displayController.hLine(value)
-                displayController.update()
+                display.hLine(value)
+                //display.update()
             }
             get("/api/display/update") {
                 call.respondText("Updating screen", ContentType.Text.Html)
-                displayController.write("Set: " + pidController.setTemp.toString(), 5)
-                displayController.write("Temp: " + pidController.currentTemp.toString(), 69)
-                displayController.vSegment(64, 0, 18)
-                displayController.hLine(18)
-                displayController.update()
+                display.write("Set: " + boiler.pid.setTemp.toString(), 5)
+                display.write("Temp: " + boiler.pid.currentTemp.toString(), 69)
+                display.vSegment(64, 0, 18)
+                display.hLine(18)
+                display.update()
             }
         }
     }.start(wait = true)
