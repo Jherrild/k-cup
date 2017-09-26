@@ -1,6 +1,7 @@
 package main.kotlin
 
-import main.kotlin.display.Oled
+import com.pi4j.io.gpio.GpioFactory
+import main.kotlin.display.Display
 import main.kotlin.power.Boiler
 import main.kotlin.power.Machine
 import main.kotlin.temp.PID
@@ -16,24 +17,26 @@ import org.jetbrains.ktor.routing.routing
  * Created on 8/22/17
  */
 fun main(args: Array<String>) {
+    var gpio = GpioFactory.getInstance()
+
     var pidController = PID(200, 0)
     var boilerController = Boiler()
     var machineController = Machine()
-    var display = Oled()
+    var displayController = Display(gpio = gpio)
     var powerState = false
 
 
-    embeddedServer(Netty, 8080) {
+    embeddedServer(Netty, 50505) {
         routing {
-            get("/api/temperature/target") {
+            get("/api/temperature/brew/target") {
                 call.respondText("${pidController.setTemp}", ContentType.Text.Html)
             }
-            get("/api/temperature/target/{temp}") {
+            get("/api/temperature/brew/target/{temp}") {
                 val newTemp = call.parameters["temp"]?.toInt()
                 pidController.setTemp = newTemp!!
                 call.respondText("Set temperature to ${pidController.setTemp}", ContentType.Text.Html)
             }
-            get("/api/temperature/current") {
+            get("/api/temperature/brew/current") {
                 call.respondText("${pidController.currentTemp}", ContentType.Text.Html)
             }
             get("/api/power") {
@@ -56,8 +59,14 @@ fun main(args: Array<String>) {
                     call.respondText("Off", ContentType.Text.Html)
                 }
             }
-            get("/api/display/test/{content}") {
-                display.displayTest("Hello world")
+            get("/api/display/test") {
+                displayController.displayTest("Hello world")
+                call.respondText("Hello world", ContentType.Text.Html)
+            }
+            get("/api/display/{content}") {
+                val content = call.parameters["content"].toString()
+                displayController.displayTest(content)
+                call.respondText(content, ContentType.Text.Html)
             }
         }
     }.start(wait = true)

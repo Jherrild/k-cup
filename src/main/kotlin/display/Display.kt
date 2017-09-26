@@ -10,14 +10,15 @@ import com.pi4j.wiringpi.I2C
  * @author jherrild@expedia.com
  * Created on 9/24/17
  */
-class Oled(address: Int = 0x3c,
-           i2c: I2CBus = I2CFactory.getInstance(I2C.CHANNEL_1),
-           gpio: GpioController = GpioFactory.getInstance(),
-           constants: SSD1306_Constants = SSD1306_Constants()) {
+class Display(address: Int = 0x3c,
+              i2c: I2CBus = I2CFactory.getInstance(I2C.CHANNEL_1),
+              gpio: GpioController = GpioFactory.getInstance(),
+              constants: SSD1306_Constants = SSD1306_Constants()) {
 
-    var display = java.SSD1306_I2C_Display(constants.LCD_WIDTH_128, constants.LCD_HEIGHT_64, gpio, i2c, address)
+    var display = SSD1306(constants.LCD_WIDTH_128, constants.LCD_HEIGHT_64, gpio, i2c, address)
 
     fun displayTest(content: String) {
+        display.begin()
         display.displayString(content)
         display.display()
     }
