@@ -9,6 +9,7 @@ import com.pi4j.io.gpio.GpioPinDigitalOutput
 import com.pi4j.io.gpio.Pin
 import com.pi4j.io.i2c.I2CBus
 import com.pi4j.wiringpi.I2C
+import org.slf4j.LoggerFactory
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.image.BufferedImage
@@ -68,6 +69,7 @@ class SSD1306
     private val fd: Int
     private var buffer: ByteArray? = null
     private var constants = SSD1306_Constants()
+    var log = LoggerFactory.getLogger("Display")
 
     init {
         this.pages = height / 8
@@ -173,8 +175,6 @@ class SSD1306
                 this.i2cWrite(0x40, data[i].toInt())
                 i++
             }
-            i--
-            i++
         }
 
     }
@@ -283,46 +283,6 @@ class SSD1306
     }
 
     /**
-     * Probably broken
-     */
-    fun scrollHorizontally(left: Boolean, start: Int, end: Int) {
-        this.command((if (left) constants.SSD1306_LEFT_HORIZONTAL_SCROLL else constants.SSD1306_RIGHT_HORIZONTAL_SCROLL).toInt())
-        this.command(0)
-        this.command(start)
-        this.command(0)
-        this.command(end)
-        this.command(1)
-        this.command(0xFF)
-        this.command(constants.SSD1306_ACTIVATE_SCROLL.toInt())
-    }
-
-    /**
-     * Probably broken
-     */
-    fun scrollDiagonally(left: Boolean, start: Int, end: Int) {
-        this.command(constants.SSD1306_SET_VERTICAL_SCROLL_AREA.toInt())
-        this.command(0)
-        this.command(this.height)
-        this.command((if (left)
-            constants.SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL
-        else
-            constants.SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL).toInt())
-        this.command(0)
-        this.command(start)
-        this.command(0)
-        this.command(end)
-        this.command(1)
-        this.command(constants.SSD1306_ACTIVATE_SCROLL.toInt())
-    }
-
-    /**
-     * Stops scrolling
-     */
-    fun stopScroll() {
-        this.command(constants.SSD1306_DEACTIVATE_SCROLL.toInt())
-    }
-
-    /**
      * Sets one pixel in the current buffer
      * @param x X position
      * @param y Y position
@@ -356,8 +316,6 @@ class SSD1306
                 this.setPixel(x, y, r.getSample(x, y, 0) > 0)
             }
         }
-
-        this.display()
     }
 
     /**
@@ -397,28 +355,15 @@ class SSD1306
     }
 
     /**
-     * Clears the screen and displays the string sent in, adding new lines as needed
+     * Displays a string at the given coordinates
      * @param data
      * @param line
      */
-    fun displayString(vararg data: String) {
-        clearImage()
+    fun addString(vararg data: String, x: Int = 0, y: Int = 0, size: Int = constants.STRING_HEIGHT, v_offset: Int = constants.STRING_HEIGHT) {
+        graphics.font = graphics.font.deriveFont(size.toFloat())
         for (i in data.indices) {
-            graphics.drawString(data[i], 0, constants.STRING_HEIGHT * (i + 1))
+            graphics.drawString(data[i], x, y + (v_offset * (i + 1)))
         }
-        //displayImage()
-    }
-
-    /**
-     * Displays the string sent in but does not clear the screen
-     * @param data
-     * @param line
-     */
-    fun addString(vararg data: String, x: Int = 0, y: Int = 0, h: Int = constants.STRING_HEIGHT) {
-        for (i in data.indices) {
-            graphics.drawString(data[i], x, y + (h * (i + 1)))
-        }
-        //displayImage()
     }
 
     /**
@@ -428,7 +373,6 @@ class SSD1306
         for (i in 0 until width - 1) {
             setPixel(i, position, true)
         }
-        //display()
     }
 
     /**
@@ -438,7 +382,6 @@ class SSD1306
         for (i in 0 until height - 1) {
             setPixel(position, i, true)
         }
-        //display()
     }
 
     /**
@@ -448,7 +391,6 @@ class SSD1306
         for (i in x1 until x2 - 1) {
             setPixel(y, i, true)
         }
-        //display()
     }
 
     /**
@@ -458,7 +400,6 @@ class SSD1306
         for (i in y1 until y2) {
             setPixel(x, i, true)
         }
-        //display()
     }
 
     private fun i2cWrite(register: Int, value: Int) {

@@ -1,6 +1,8 @@
 package main.kotlin
 
 import com.pi4j.io.gpio.GpioFactory
+import com.pi4j.io.gpio.RaspiPin
+import input.ToggleSwitch
 import main.kotlin.display.Display
 import main.kotlin.power.Boiler
 import org.jetbrains.ktor.host.embeddedServer
@@ -16,20 +18,25 @@ import kotlin.concurrent.fixedRateTimer
  * Created on 8/22/17
  */
 var gpio = GpioFactory.getInstance()
-
 var boiler = Boiler()
 var display = Display(gpio = gpio)
-var powerState = false
+
+var brewSwitch = ToggleSwitch(gpio, RaspiPin.GPIO_29, "BrewSwitch")
+var shotSwitch = ToggleSwitch(gpio, RaspiPin.GPIO_28, "ShotSwitch")
+//TODO: Should create POWER switch to override remote power state change on a hardware circuit. This should prevent the boiler from being turned on, even if the boiler is "on"
 
 fun main(args: Array<String>) {
     boiler.init()
     display.init()
-    fixedRateTimer("Display Update", true, 0.toLong(), 200.toLong()) {
-        display.write("Set: " + boiler.pid.setTemp.toString(), 5)
-        display.write("Temp: " + boiler.pid.currentTemp.toString(), 69)
-        display.vSegment(64, 0, 18)
-        display.hLine(18)
-        display.update()
+    brewSwitch.init()
+    shotSwitch.init()
+
+    fixedRateTimer("Display Update Timer", true, 0.toLong(), 200.toLong()) {
+        updateScreen()
+    }
+
+    fixedRateTimer("Boiler Update Timer", true, 0.toLong(), 100.toLong()) {
+        updateBoiler()
     }
 
     embeddedServer(Netty, 50505) {
@@ -37,62 +44,72 @@ fun main(args: Array<String>) {
             get("/api/temperature/brew/target") {
                 call.respondText("${boiler.pid.setTemp}", ContentType.Text.Html)
             }
+
             get("/api/temperature/brew/target/{temp}") {
                 val newTemp = call.parameters["temp"]?.toInt()
                 boiler.pid.setTemp = newTemp!!
                 call.respondText("Set temperature to ${boiler.pid.setTemp}", ContentType.Text.Html)
             }
+
             get("/api/temperature/brew/current") {
                 call.respondText("${boiler.pid.currentTemp}", ContentType.Text.Html)
             }
+
             get("/api/power") {
-                if (powerState) {
+                if (boiler.power_state) {
                     call.respondText("On", ContentType.Text.Html)
                 } else {
                     call.respondText("Off", ContentType.Text.Html)
                 }
             }
+
             get("/api/power/{state}") {
                 if (call.parameters["state"]?.toLowerCase() == "on") {
-                    powerState = true
+                    boiler.power_state = true
                 } else if (call.parameters["state"]?.toLowerCase() == "off") {
-                    powerState = false
+                    boiler.power_state = false
                 }
 
-                if (powerState) {
+                if (boiler.power_state) {
                     call.respondText("On", ContentType.Text.Html)
                 } else {
                     call.respondText("Off", ContentType.Text.Html)
                 }
             }
+
             get("/api/display") {
                 display.write("Hello world")
                 display.update()
                 call.respondText("Hello world", ContentType.Text.Html)
             }
+
             get("/api/display/{content}") {
                 val content = call.parameters["content"].toString()
                 display.write(content)
                 //display.update()
                 call.respondText(content, ContentType.Text.Html)
             }
+
             get("/api/display/clear") {
                 display.clear()
                 //display.update()
                 call.respondText("Cleared Display", ContentType.Text.Html)
             }
+
             get("/api/display/vline/{index}") {
                 val value = call.parameters["index"]!!.toInt()
                 call.respondText("Attempted to draw a line at '${value}'", ContentType.Text.Html)
                 display.vLine(value)
                 //display.update()
             }
+
             get("/api/display/hline/{index}") {
                 val value = call.parameters["index"]!!.toInt()
                 call.respondText("Attempted to draw a line at '${value}'", ContentType.Text.Html)
                 display.hLine(value)
                 //display.update()
             }
+
             get("/api/display/update") {
                 call.respondText("Updating screen", ContentType.Text.Html)
                 display.write("Set: " + boiler.pid.setTemp.toString(), 5)
@@ -103,5 +120,37 @@ fun main(args: Array<String>) {
             }
         }
     }.start(wait = true)
+}
 
+
+fun updateScreen() {
+    //TODO: Write centered text method in Display/SSD1306
+    display.clear()
+    display.write("Set: " + boiler.pid.setTemp.toString(), 5, 0, 15)
+
+    if (brewSwitch.state) {
+        display.write("Brew", 85, 0, 12, 15)
+    }else {
+        display.write("Steam", 85, 0, 12, 15)
+    }
+
+    // Not pulling a shot
+    if (!shotSwitch.state) {
+        display.write(boiler.pid.currentTemp.toString(), 52, 24, 25)
+    }else { // Pulling a shot
+        display.write( ((System.currentTimeMillis() - shotSwitch.last_modified) / 1000).toInt().toString(), 52, 24, 25)
+    }
+
+    display.updateText()
+    //display.vSegment(64, 0, 18)
+    display.hLine(18)
+    display.update()
+}
+
+fun updateBoiler() {
+    if (brewSwitch.state) {
+        boiler.pid.setTemp = boiler.brew_temp
+    }else {
+        boiler.pid.setTemp = boiler.steam_temp
+    }
 }

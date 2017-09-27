@@ -16,14 +16,19 @@ class Display(address: Int = 0x3c,
               constants: SSD1306_Constants = SSD1306_Constants()) {
 
     var display = SSD1306(constants.LCD_WIDTH_128, constants.LCD_HEIGHT_64, gpio, i2c, address)
+    var shotTimer = false
 
     fun init() {
         display.begin()
     }
 
     fun clear() {
+        display.clearImage()
         display.clear()
-        display.display()
+    }
+
+    fun updateText() {
+        display.displayImage()
     }
 
     fun update() {
@@ -34,8 +39,8 @@ class Display(address: Int = 0x3c,
         display.addString(content, x=x, y=y)
     }
 
-    fun write(content: String, x: Int = 0, y: Int = 0, h: Int) {
-        display.addString(content, x=x, y=y, h=h)
+    fun write(content: String, x: Int = 0, y: Int = 0, size: Int, v_offset: Int = size) {
+        display.addString(content, x=x, y=y, size=size, v_offset = v_offset)
     }
 
     fun vLine(index: Int) {
