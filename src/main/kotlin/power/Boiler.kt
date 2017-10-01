@@ -13,7 +13,7 @@ import main.kotlin.temp.PID
  *   Temperature variables are stored in C, and
  */
 class Boiler(brew_temp: Int = 100, steam_temp: Int = 150, temp_sensor: Thermocouple, power_state: Boolean = false) {
-    var pid = PID(brew_temp, 0)
+    var pid = PID(brew_temp, 0.toFloat())
     var power_state = power_state
     var brew_temp = brew_temp
     var steam_temp = steam_temp
@@ -21,7 +21,6 @@ class Boiler(brew_temp: Int = 100, steam_temp: Int = 150, temp_sensor: Thermocou
 
     fun init() {
         power_state = true
-        pid.init()
     }
 
     fun boilerPower(state: Boolean) {
@@ -32,10 +31,15 @@ class Boiler(brew_temp: Int = 100, steam_temp: Int = 150, temp_sensor: Thermocou
         brew_temp = degrees
     }
 
+    fun updateTemperature() : Float {
+        pid.currentTemp = temp_sensor.readTemp()
+        return pid.currentTemp
+    }
+
     /**
      * Executes a single cycle of the default PID algorithm on the boiler's PID object
      */
     fun runPid() {
-
+        pid.execute()
     }
 }

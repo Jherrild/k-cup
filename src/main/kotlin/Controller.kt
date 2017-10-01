@@ -42,7 +42,6 @@ fun main(args: Array<String>) {
 
     fixedRateTimer("Boiler Update Timer", true, 0.toLong(), 100.toLong()) {
         updateBoiler()
-        boiler.runPid()
     }
 
     embeddedServer(Netty, 50505) {
@@ -142,18 +141,19 @@ fun updateScreen() {
 
     // Not pulling a shot
     if (!shotSwitch.state) {
-        display.write(boiler.pid.currentTemp.toString(), 52, 24, 25)
+        display.write(boiler.pid.currentTemp.toInt().toString(), 52, 24, 25)
     }else { // Pulling a shot
         display.write( ((System.currentTimeMillis() - shotSwitch.last_modified) / 1000).toInt().toString(), 52, 24, 25)
     }
 
     display.updateText()
-    //display.vSegment(64, 0, 18)
     display.hLine(18)
     display.update()
 }
 
 fun updateBoiler() {
+    logger.info("Current temperature is: " + boiler.temp_sensor.readTemp() + " C")
+    boiler.runPid()
     if (brewSwitch.state) {
         boiler.pid.setTemp = boiler.brew_temp
     }else {
