@@ -12,6 +12,9 @@ import com.pi4j.wiringpi.Spi;
 
 import java.util.Arrays;
 
+/**
+ * TODO: Convert to Kotlin
+ */
 public class MAX31855 {
 
     public static final int THERMOCOUPLE_SIGN_BIT = 0x80000000; // D31

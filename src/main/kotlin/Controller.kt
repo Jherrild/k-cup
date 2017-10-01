@@ -2,6 +2,7 @@ package main.kotlin
 
 import com.pi4j.io.gpio.GpioFactory
 import com.pi4j.io.gpio.RaspiPin
+import input.Thermocouple
 import input.ToggleSwitch
 import main.kotlin.display.Display
 import main.kotlin.power.Boiler
@@ -11,14 +12,17 @@ import org.jetbrains.ktor.netty.Netty
 import org.jetbrains.ktor.response.respondText
 import org.jetbrains.ktor.routing.get
 import org.jetbrains.ktor.routing.routing
+import org.slf4j.LoggerFactory
 import kotlin.concurrent.fixedRateTimer
 
 /**
  * @author jestenh@gmail.com
  * Created on 8/22/17
  */
+var logger = LoggerFactory.getLogger("Controller")
 var gpio = GpioFactory.getInstance()
-var boiler = Boiler()
+var temp_sensor = Thermocouple(gpio, RaspiPin.GPIO_13, RaspiPin.GPIO_14, RaspiPin.GPIO_10)
+var boiler = Boiler(temp_sensor = temp_sensor)
 var display = Display(gpio = gpio)
 
 var brewSwitch = ToggleSwitch(gpio, RaspiPin.GPIO_29, "BrewSwitch")
@@ -26,6 +30,7 @@ var shotSwitch = ToggleSwitch(gpio, RaspiPin.GPIO_28, "ShotSwitch")
 //TODO: Should create POWER switch to override remote power state change on a hardware circuit. This should prevent the boiler from being turned on, even if the boiler is "on"
 
 fun main(args: Array<String>) {
+    temp_sensor.init()
     boiler.init()
     display.init()
     brewSwitch.init()
@@ -37,6 +42,7 @@ fun main(args: Array<String>) {
 
     fixedRateTimer("Boiler Update Timer", true, 0.toLong(), 100.toLong()) {
         updateBoiler()
+        boiler.runPid()
     }
 
     embeddedServer(Netty, 50505) {

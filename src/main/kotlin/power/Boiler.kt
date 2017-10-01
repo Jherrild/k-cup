@@ -1,5 +1,6 @@
 package main.kotlin.power
 
+import input.Thermocouple
 import main.kotlin.temp.PID
 
 /**
@@ -9,16 +10,19 @@ import main.kotlin.temp.PID
 
 /**
  * Boiler class contains a PID reference, and starts a thread for the PID control algorithm when initialized
+ *   Temperature variables are stored in C, and
  */
-class Boiler(brew_temp: Int = 100, steam_temp: Int = 150, power_state: Boolean = false) {
+class Boiler(brew_temp: Int = 100, steam_temp: Int = 150, temp_sensor: Thermocouple, power_state: Boolean = false) {
     var pid = PID(brew_temp, 0)
     var power_state = power_state
-    // brew_temp variable is C - this will be converted to F for output to user only.
     var brew_temp = brew_temp
     var steam_temp = steam_temp
+    var temp_sensor = temp_sensor
 
-    // brew_state is true if set to 'Brew', and false if set to 'Steam'
-    var brew_state = true
+    fun init() {
+        power_state = true
+        pid.init()
+    }
 
     fun boilerPower(state: Boolean) {
         power_state = state
@@ -28,7 +32,10 @@ class Boiler(brew_temp: Int = 100, steam_temp: Int = 150, power_state: Boolean =
         brew_temp = degrees
     }
 
-    fun init() {
-        power_state = true
+    /**
+     * Executes a single cycle of the default PID algorithm on the boiler's PID object
+     */
+    fun runPid() {
+
     }
 }
