@@ -1,4 +1,4 @@
-package input
+package com.herrild.espiresso.input
 
 import com.pi4j.io.gpio.GpioController
 import com.pi4j.io.gpio.Pin
@@ -15,7 +15,7 @@ class Thermocouple(gpio: GpioController, DO: Pin, CS: Pin, CLK: Pin) {
     val CS = CS
     val CLK = CLK
     val logger = LoggerFactory.getLogger("Thermocouple")
-    var sensor = MAX31855(-1) //Placeholder until Thermocouple is initialized
+    var sensor = com.herrild.espiresso.input.MAX31855(-1) //Placeholder until Thermocouple is initialized
 
     fun init() {
         val channel = Spi.CHANNEL_0
@@ -25,14 +25,17 @@ class Thermocouple(gpio: GpioController, DO: Pin, CS: Pin, CLK: Pin) {
             logger.error("Unable to setup SPI for Thermocouple")
             throw RuntimeException("SPI Setup failed")
         }
-        sensor = MAX31855(channel)
+        sensor = com.herrild.espiresso.input.MAX31855(channel)
     }
 
     fun readTemp() : Float {
         var raw = IntArray(2)
-        val rawTemp = sensor.readRaw(raw)
+        val faults = sensor.readRaw(raw)
+        if(faults != 0) {
+            logger.error("MAX31855 returned faults on readRaw() - Fault: " + faults.toString())
+        }
         val chipTemp = sensor.getInternalTemperature(raw[0]).toInt()
-        val probeTemp = sensor.getInternalTemperature(raw[1])
+        val probeTemp = sensor.getThermocoupleTemperature(raw[1])
 
         logger.info("Chip temperature: " + chipTemp.toString())
         if(chipTemp > 110) {

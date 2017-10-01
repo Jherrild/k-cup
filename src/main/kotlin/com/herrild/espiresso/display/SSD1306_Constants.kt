@@ -1,4 +1,4 @@
-package main.kotlin.display
+package com.herrild.espiresso.display
 
 /**
  * @author jherrild@expedia.com

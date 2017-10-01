@@ -1,11 +1,11 @@
-package main.kotlin
+package com.herrild.espiresso
 
+import com.herrild.espiresso.display.Display
+import com.herrild.espiresso.input.Thermocouple
+import com.herrild.espiresso.input.ToggleSwitch
+import com.herrild.espiresso.power.Boiler
 import com.pi4j.io.gpio.GpioFactory
 import com.pi4j.io.gpio.RaspiPin
-import input.Thermocouple
-import input.ToggleSwitch
-import main.kotlin.display.Display
-import main.kotlin.power.Boiler
 import org.jetbrains.ktor.host.embeddedServer
 import org.jetbrains.ktor.http.ContentType
 import org.jetbrains.ktor.netty.Netty
@@ -51,7 +51,7 @@ fun main(args: Array<String>) {
             }
 
             get("/api/temperature/brew/target/{temp}") {
-                val newTemp = call.parameters["temp"]?.toInt()
+                val newTemp = call.parameters["com/herrild/espiresso/tempherrild/espiresso/temp"]?.toInt()
                 boiler.pid.setTemp = newTemp!!
                 call.respondText("Set temperature to ${boiler.pid.setTemp}", ContentType.Text.Html)
             }
@@ -152,7 +152,7 @@ fun updateScreen() {
 }
 
 fun updateBoiler() {
-    logger.info("Current temperature is: " + boiler.temp_sensor.readTemp() + " C")
+    logger.info("Current temperature is: " + boiler.updateTemperature() + " C")
     boiler.runPid()
     if (brewSwitch.state) {
         boiler.pid.setTemp = boiler.brew_temp

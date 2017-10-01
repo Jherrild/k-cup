@@ -1,7 +1,7 @@
 /**
  *
  */
-package main.kotlin.display
+package com.herrild.espiresso.display
 
 import com.pi4j.io.gpio.GpioController
 import com.pi4j.io.gpio.GpioFactory
@@ -24,7 +24,7 @@ class SSD1306
 /**
  * Display object using I2C communication with a reset pin
  * <br></br>
- * As I haven't got an I2C main.kotlin.display and I don't understand I2C much, I just tried to copy
+ * As I haven't got an I2C main.com.herrild.espiresso.getDisplay and I don't understand I2C much, I just tried to copy
  * the Adafruit's library and I am using a hack to use WiringPi function similar to one in the original lib directly.
  *
  * @param width   Display width
@@ -206,7 +206,7 @@ class SSD1306
     }
 
     /**
-     * Pulls reset pin high and low and resets the main.kotlin.display
+     * Pulls reset pin high and low and resets the main.com.herrild.espiresso.getDisplay
      */
     fun reset() {
         if (this.hasRst) {
@@ -224,7 +224,7 @@ class SSD1306
     }
 
     /**
-     * Sends the buffer to the main.kotlin.display
+     * Sends the buffer to the main.com.herrild.espiresso.getDisplay
      */
     @Synchronized
     fun display() {
@@ -246,7 +246,7 @@ class SSD1306
     }
 
     /**
-     * Sets the main.kotlin.display contract. Apparently not really working.
+     * Sets the main.com.herrild.espiresso.getDisplay contract. Apparently not really working.
      * @param contrast Contrast
      */
     fun setContrast(contrast: Byte) {
@@ -271,7 +271,7 @@ class SSD1306
     }
 
     /**
-     * Sets if the main.kotlin.display should be inverted
+     * Sets if the main.com.herrild.espiresso.getDisplay should be inverted
      * @param invert Invert state
      */
     fun invertDisplay(invert: Boolean) {
@@ -304,7 +304,7 @@ class SSD1306
     }
 
     /**
-     * Copies AWT image contents to buffer. Calls main.kotlin.display()
+     * Copies AWT image contents to buffer. Calls main.com.herrild.espiresso.getDisplay()
      * @see SSD1306_I2C_Display.display
      */
     @Synchronized

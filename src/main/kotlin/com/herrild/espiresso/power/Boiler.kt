@@ -1,7 +1,7 @@
-package main.kotlin.power
+package com.herrild.espiresso.power
 
-import input.Thermocouple
-import main.kotlin.temp.PID
+import com.herrild.espiresso.input.Thermocouple
+import com.herrild.espiresso.temp.PID
 
 /**
  * @author jherrild@expedia.com

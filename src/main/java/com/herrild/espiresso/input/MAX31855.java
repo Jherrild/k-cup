@@ -1,7 +1,7 @@
 /**
  * Copyright 2017 Expedia, Inc. All rights reserved. EXPEDIA PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  */
-package input;
+package com.herrild.espiresso.input;
 
 /**
  * @author jherrild@expedia.com

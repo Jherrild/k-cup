@@ -1,4 +1,4 @@
-package input
+package com.herrild.espiresso.input
 
 /**
  * @author jherrild@expedia.com

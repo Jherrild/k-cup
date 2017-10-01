@@ -54,7 +54,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'main.kotlin.ControllerKt'
+        attributes 'Main-Class': 'com.herrild.espiresso.ControllerKt'
     }
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 }

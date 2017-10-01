@@ -1,4 +1,4 @@
-package input
+package com.herrild.espiresso.input
 
 import com.pi4j.io.gpio.GpioController
 import com.pi4j.io.gpio.Pin
