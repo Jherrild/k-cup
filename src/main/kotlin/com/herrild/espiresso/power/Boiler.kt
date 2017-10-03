@@ -1,6 +1,7 @@
 package com.herrild.espiresso.power
 
 import com.herrild.espiresso.input.Thermocouple
+import com.herrild.espiresso.input.ToggleSwitch
 import com.herrild.espiresso.temp.PID
 
 /**
@@ -12,23 +13,60 @@ import com.herrild.espiresso.temp.PID
  * Boiler class contains a PID reference, and starts a thread for the PID control algorithm when initialized
  *   Temperature variables are stored in C, and
  */
-class Boiler(brew_temp: Int = 100, steam_temp: Int = 150, temp_sensor: Thermocouple, power_state: Boolean = false) {
+class Boiler(var brew_temp: Int = 100,
+             var steam_temp: Int = 150,
+             var temp_sensor: Thermocouple,
+             var power_state: Boolean = false,
+             var brew_switch: ToggleSwitch) {
+
     var pid = PID(brew_temp, 0.toFloat())
-    var power_state = power_state
-    var brew_temp = brew_temp
-    var steam_temp = steam_temp
-    var temp_sensor = temp_sensor
 
     fun init() {
         power_state = true
     }
 
-    fun boilerPower(state: Boolean) {
-        power_state = state
+    /**
+     * Implemented for Hardware IO purposes - modifies the steam or brew temp based on which mode the machine is in.
+     *   This is to ensure that pressing the temperature up or temperature down buttons changes the temperature of the
+     *   current machine mode.
+     */
+    fun increaseTemp() {
+        if(brew_temp < 150) {
+            if(brew_switch.state) {
+                brew_temp ++
+            }else {
+                steam_temp ++
+            }
+        }
     }
 
+    /**
+     * Implemented for Hardware IO purposes - modifies the steam or brew temp based on which mode the machine is in.
+     *   This is to ensure that pressing the temperature up or temperature down buttons changes the temperature of the
+     *   current machine mode.
+     */
+    fun decreaseTemp() {
+        if(brew_temp > 80) {
+            if(brew_switch.state) {
+                brew_temp --
+            }else {
+                steam_temp --
+            }
+        }
+    }
+
+    /**
+     * Intended for REST api, not to be utilized by hardware
+     */
     fun changeBrewTemp(degrees: Int) {
         brew_temp = degrees
+    }
+
+    /**
+     * Intended for REST api, not to be utilized by hardware
+     */
+    fun changeSteamTemp(degrees: Int) {
+        steam_temp = degrees
     }
 
     fun updateTemperature() : Float {

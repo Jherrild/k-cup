@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
  * @author jherrild@expedia.com
  * Created on 9/26/17
  */
-class ToggleSwitch(gpio: GpioController, pin: Pin, name: String) {
+open class ToggleSwitch(gpio: GpioController, pin: Pin, name: String) {
     var logger = LoggerFactory.getLogger(name)
     var last_modified = System.currentTimeMillis()
     private var gpioPin = gpio.provisionDigitalInputPin(pin, name, PinPullResistance.PULL_UP)
@@ -24,10 +24,10 @@ class ToggleSwitch(gpio: GpioController, pin: Pin, name: String) {
         })
     }
 
-    fun toggle() {
-        logger.info(gpioPin.name + " was toggled on pin " + gpioPin.pin.name)
-        resetModified()
+    open fun toggle() {
         state = gpioPin.isState(PinState.HIGH)
+        resetModified()
+        logger.info(gpioPin.name + " was toggled on pin " + gpioPin.pin.name)
     }
 
     fun resetModified() {

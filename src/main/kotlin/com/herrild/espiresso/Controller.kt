@@ -1,8 +1,13 @@
 package com.herrild.espiresso
 
 import com.herrild.espiresso.display.Display
+import com.herrild.espiresso.enums.RelayType
+import com.herrild.espiresso.enums.SwitchType
+import com.herrild.espiresso.input.RelaySwitch
+import com.herrild.espiresso.input.TemperatureSwitch
 import com.herrild.espiresso.input.Thermocouple
 import com.herrild.espiresso.input.ToggleSwitch
+import com.herrild.espiresso.output.Relay
 import com.herrild.espiresso.power.Boiler
 import com.pi4j.io.gpio.GpioFactory
 import com.pi4j.io.gpio.RaspiPin
@@ -22,19 +27,27 @@ import kotlin.concurrent.fixedRateTimer
 var logger = LoggerFactory.getLogger("Controller")
 var gpio = GpioFactory.getInstance()
 var temp_sensor = Thermocouple(gpio, RaspiPin.GPIO_13, RaspiPin.GPIO_14, RaspiPin.GPIO_10)
-var boiler = Boiler(temp_sensor = temp_sensor)
 var display = Display(gpio = gpio)
-
+//TODO: Check pins against hardware for temp up and down switches, and relays
+var pumpRelay = Relay(gpio, RaspiPin.GPIO_24, RelayType.TOGGLE)
+var boilerRelay = Relay(gpio, RaspiPin.GPIO_25, RelayType.PWM)
 var brewSwitch = ToggleSwitch(gpio, RaspiPin.GPIO_29, "BrewSwitch")
-var shotSwitch = ToggleSwitch(gpio, RaspiPin.GPIO_28, "ShotSwitch")
-//TODO: Should create POWER switch to override remote power state change on a hardware circuit. This should prevent the boiler from being turned on, even if the boiler is "on"
+var shotSwitch = RelaySwitch(gpio, RaspiPin.GPIO_28, "ShotSwitch", pumpRelay)
+var boiler = Boiler(temp_sensor = temp_sensor, brew_switch = brewSwitch)
+var upButton = TemperatureSwitch(gpio, RaspiPin.GPIO_27, "TempUpButton", boiler, SwitchType.UP)
+var downButton = TemperatureSwitch(gpio, RaspiPin.GPIO_26, "TempDownButton", boiler, SwitchType.DOWN)
+//TODO: Should create POWER switch to override remote power state change on a hardware circuit. This should prevent
+// the boiler from being turned on, even if the boiler is "on" - this is a hardware change, and will not be reflected
+// here
 
 fun main(args: Array<String>) {
     temp_sensor.init()
-    boiler.init()
-    display.init()
     brewSwitch.init()
     shotSwitch.init()
+    boiler.init()
+    upButton.init()
+    downButton.init()
+    display.init()
 
     fixedRateTimer("Display Update Timer", true, 0.toLong(), 200.toLong()) {
         updateScreen()
