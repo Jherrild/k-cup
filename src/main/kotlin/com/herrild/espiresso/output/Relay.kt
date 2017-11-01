@@ -1,6 +1,5 @@
 package com.herrild.espiresso.output
 
-import com.herrild.espiresso.enums.RelayType
 import com.pi4j.io.gpio.GpioController
 import com.pi4j.io.gpio.Pin
 
@@ -12,12 +11,6 @@ import com.pi4j.io.gpio.Pin
 /**
  * Controller class for a solid state relay - this utilizes pulse width modulation for power control
  */
-class Relay(gpio: GpioController, pin: Pin, val type: RelayType) {
-    fun on() {
+open class Relay(val name: String, var gpio: GpioController, val pin: Pin) {
 
-    }
-
-    fun off() {
-
-    }
 }

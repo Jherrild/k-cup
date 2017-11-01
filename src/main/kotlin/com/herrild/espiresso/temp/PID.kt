@@ -4,15 +4,23 @@ package com.herrild.espiresso.temp
  * @author jherrild@expedia.com
  * Created on 9/24/17
  */
-class PID(setTemp: Int, currentTemp: Float, p: Int = 2, i: Int = 0, d: Int = 0) {
-    var setTemp = setTemp
-    var currentTemp = currentTemp
+class PID(var setTemp: Int, var currentTemp: Float, var p: Float = 2.toFloat(), var i: Float = 0.toFloat(), var d: Float = 0.toFloat()) {
 
-    var p = p
-    var i = i
-    var d = d
+    fun set(temp: Int) {
+        setTemp = temp
+    }
+
+    fun tune(deltaP: Float = 0.toFloat(), deltaI: Float = 0.toFloat(), deltaD: Float = 0.toFloat()) {
+        p += deltaP
+        i += deltaI
+        d += deltaD
+    }
 
     fun execute() {
         //TODO: Implement a single iteration of the pid function
+    }
+
+    fun getOutput(set: Int, actual: Int) {
+
     }
 }

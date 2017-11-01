@@ -1,13 +1,13 @@
 package com.herrild.espiresso
 
 import com.herrild.espiresso.display.Display
-import com.herrild.espiresso.enums.RelayType
 import com.herrild.espiresso.enums.SwitchType
 import com.herrild.espiresso.input.RelaySwitch
 import com.herrild.espiresso.input.TemperatureSwitch
 import com.herrild.espiresso.input.Thermocouple
 import com.herrild.espiresso.input.ToggleSwitch
-import com.herrild.espiresso.output.Relay
+import com.herrild.espiresso.output.PwmRelay
+import com.herrild.espiresso.output.ToggleRelay
 import com.herrild.espiresso.power.Boiler
 import com.pi4j.io.gpio.GpioFactory
 import com.pi4j.io.gpio.RaspiPin
@@ -29,13 +29,15 @@ var gpio = GpioFactory.getInstance()
 var temp_sensor = Thermocouple(gpio, RaspiPin.GPIO_13, RaspiPin.GPIO_14, RaspiPin.GPIO_10)
 var display = Display(gpio = gpio)
 //TODO: Check pins against hardware for temp up and down switches, and relays
-var pumpRelay = Relay(gpio, RaspiPin.GPIO_24, RelayType.TOGGLE)
-var boilerRelay = Relay(gpio, RaspiPin.GPIO_25, RelayType.PWM)
+var pumpRelay = ToggleRelay("Pump Relay", gpio, RaspiPin.GPIO_24)
+var boilerRelay = PwmRelay("Boiler Relay", gpio, RaspiPin.GPIO_25)
 var brewSwitch = ToggleSwitch(gpio, RaspiPin.GPIO_29, "BrewSwitch")
 var shotSwitch = RelaySwitch(gpio, RaspiPin.GPIO_28, "ShotSwitch", pumpRelay)
 var boiler = Boiler(temp_sensor = temp_sensor, brew_switch = brewSwitch)
 var upButton = TemperatureSwitch(gpio, RaspiPin.GPIO_27, "TempUpButton", boiler, SwitchType.UP)
 var downButton = TemperatureSwitch(gpio, RaspiPin.GPIO_26, "TempDownButton", boiler, SwitchType.DOWN)
+// TODO: Maybe read pins into hashmap from configuration file?
+// var pinMap = HashMap<String, RaspiPin>()
 //TODO: Should create POWER switch to override remote power state change on a hardware circuit. This should prevent
 // the boiler from being turned on, even if the boiler is "on" - this is a hardware change, and will not be reflected
 // here
@@ -55,6 +57,7 @@ fun main(args: Array<String>) {
 
     fixedRateTimer("Boiler Update Timer", true, 0.toLong(), 100.toLong()) {
         updateBoiler()
+        controlPump()
     }
 
     embeddedServer(Netty, 50505) {
@@ -146,9 +149,10 @@ fun updateScreen() {
     display.clear()
     display.write("Set: " + boiler.pid.setTemp.toString(), 5, 0, 15)
 
+    // Brew mode
     if (brewSwitch.state) {
         display.write("Brew", 85, 0, 12, 15)
-    }else {
+    }else { // Steam mode
         display.write("Steam", 85, 0, 12, 15)
     }
 
@@ -171,5 +175,13 @@ fun updateBoiler() {
         boiler.pid.setTemp = boiler.brew_temp
     }else {
         boiler.pid.setTemp = boiler.steam_temp
+    }
+}
+
+fun controlPump() {
+    if(shotSwitch.state && brewSwitch.state) {
+        pumpRelay.on()
+    }else {
+        pumpRelay.off()
     }
 }
