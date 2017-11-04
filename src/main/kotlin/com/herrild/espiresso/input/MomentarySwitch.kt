@@ -7,7 +7,7 @@ import com.pi4j.io.gpio.event.GpioPinListenerDigital
 import org.slf4j.LoggerFactory
 
 /**
- * @author jherrild@expedia.com
+ * @author jestenh@gmail.com
  * Created on 9/26/17
  */
 open class MomentarySwitch(gpio: GpioController, pin: Pin, name: String) {

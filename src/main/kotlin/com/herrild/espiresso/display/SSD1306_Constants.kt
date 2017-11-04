@@ -1,7 +1,7 @@
 package com.herrild.espiresso.display
 
 /**
- * @author jherrild@expedia.com
+ * @author jestenh@gmail.com
  * Created on 9/24/17
  */
 class SSD1306_Constants {

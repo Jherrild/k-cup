@@ -7,7 +7,7 @@ import com.pi4j.io.i2c.I2CFactory
 import com.pi4j.wiringpi.I2C
 
 /**
- * @author jherrild@expedia.com
+ * @author jestenh@gmail.com
  * Created on 9/24/17
  */
 class Display(address: Int = 0x3c,

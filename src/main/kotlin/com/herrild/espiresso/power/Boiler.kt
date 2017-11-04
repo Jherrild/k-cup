@@ -5,7 +5,7 @@ import com.herrild.espiresso.input.ToggleSwitch
 import com.herrild.espiresso.temp.PID
 
 /**
- * @author jherrild@expedia.com
+ * @author jestenh@gmail.com
  * Created on 9/24/17
  */
 

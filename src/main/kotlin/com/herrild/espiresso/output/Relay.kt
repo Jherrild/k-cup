@@ -4,7 +4,7 @@ import com.pi4j.io.gpio.GpioController
 import com.pi4j.io.gpio.Pin
 
 /**
- * @author jherrild@expedia.com
+ * @author jestenh@gmail.com
  * Created on 10/3/17
  */
 

@@ -6,7 +6,7 @@ import com.pi4j.wiringpi.Spi
 import org.slf4j.LoggerFactory
 
 /**
- * @author jherrild@expedia.com
+ * @author jestenh@gmail.com
  * Created on 9/26/17
  */
 class Thermocouple(gpio: GpioController, DO: Pin, CS: Pin, CLK: Pin) {

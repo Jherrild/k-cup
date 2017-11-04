@@ -5,7 +5,7 @@ import com.pi4j.io.gpio.Pin
 import com.pi4j.wiringpi.Gpio
 
 /**
- * @author jherrild@expedia.com
+ * @author jestenh@gmail.com
  * Created on 10/29/17
  */
 class PwmRelay(name: String, gpio: GpioController, pin: Pin, val range: Int = 4000, val clock: Int = 2400) : Relay(name, gpio, pin) {

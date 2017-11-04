@@ -4,7 +4,7 @@
 package com.herrild.espiresso.input;
 
 /**
- * @author jherrild@expedia.com
+ * @author jestenh@gmail.com
  * Created on 9/30/17
  */
 

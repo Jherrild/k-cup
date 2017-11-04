@@ -6,7 +6,7 @@ import com.pi4j.io.gpio.GpioController
 import com.pi4j.io.gpio.Pin
 
 /**
- * @author jherrild@expedia.com
+ * @author jestenh@gmail.com
  * Created on 10/3/17
  */
 class TemperatureSwitch(gpio: GpioController, pin: Pin, name: String, var boiler: Boiler, val type: SwitchType) : MomentarySwitch(gpio, pin, name) {
