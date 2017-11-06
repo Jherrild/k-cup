@@ -73,7 +73,7 @@ fun main(args: Array<String>) {
             }
 
             get("/api/temperature/brew/current") {
-                call.respondText("${boiler.pid.currentTemp}", ContentType.Text.Html)
+                call.respondText("${boiler.currentTemp}", ContentType.Text.Html)
             }
 
             get("/api/power") {
@@ -134,7 +134,7 @@ fun main(args: Array<String>) {
             get("/api/display/update") {
                 call.respondText("Updating screen", ContentType.Text.Html)
                 display.write("Set: " + boiler.pid.setTemp.toString(), 5)
-                display.write("Temp: " + boiler.pid.currentTemp.toString(), 69)
+                display.write("Temp: " + boiler.currentTemp.toString(), 69)
                 display.vSegment(64, 0, 18)
                 display.hLine(18)
                 display.update()
@@ -158,7 +158,7 @@ fun updateScreen() {
 
     // Not pulling a shot
     if (!shotSwitch.state) {
-        display.write(boiler.pid.currentTemp.toInt().toString(), 52, 24, 25)
+        display.write(boiler.currentTemp.toInt().toString(), 52, 24, 25)
     }else { // Pulling a shot
         display.write( ((System.currentTimeMillis() - shotSwitch.last_modified) / 1000).toInt().toString(), 52, 24, 25)
     }
@@ -170,7 +170,10 @@ fun updateScreen() {
 
 fun updateBoiler() {
     logger.info("Current temperature is: " + boiler.updateTemperature() + " C")
-    boiler.runPid()
+
+    // Runs pid function, maps output onto the range of the Boiler Relay's input, and then updates the relay
+    boilerRelay.update(boiler.pid.positiveMap(boiler.runPid(), 10.toFloat(), 4000))
+
     if (brewSwitch.state) {
         boiler.pid.setTemp = boiler.brew_temp
     }else {

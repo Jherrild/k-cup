@@ -4,7 +4,7 @@
 package com.herrild.espiresso.input;
 
 /**
- * @author jestenh@gmail.com
+ * @author Travis Wyatt - travis.i.wyatt@gmail.com
  * Created on 9/30/17
  */
 

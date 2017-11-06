@@ -1,8 +1,8 @@
 package com.herrild.espiresso.display
 
 /**
- * @author jestenh@gmail.com
- * Created on 9/24/17
+ * @author Tuan Vu
+ * Converted to Kotlin on 9/24/17
  */
 class SSD1306_Constants {
     val SSD1306_I2C_ADDRESS: Short = 0x3C

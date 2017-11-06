@@ -20,6 +20,7 @@ class Boiler(var brew_temp: Int = 100,
              var brew_switch: ToggleSwitch) {
 
     var pid = PID(brew_temp, 0.toFloat())
+    var currentTemp = 0.toFloat()
 
     fun init() {
         power_state = true
@@ -70,14 +71,14 @@ class Boiler(var brew_temp: Int = 100,
     }
 
     fun updateTemperature() : Float {
-        pid.currentTemp = temp_sensor.readTemp()
-        return pid.currentTemp
+        currentTemp = temp_sensor.readTemp()
+        return currentTemp
     }
 
     /**
      * Executes a single cycle of the default PID algorithm on the boiler's PID object
      */
-    fun runPid() {
-        pid.execute()
+    fun runPid() : Float {
+        return pid.execute(currentTemp)
     }
 }

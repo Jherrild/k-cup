@@ -19,6 +19,7 @@ import kotlin.experimental.or
 
 /**
  * @author Tuan Vu
+ * Converted to Kotlin on 9/24/17
  */
 class SSD1306
 /**
