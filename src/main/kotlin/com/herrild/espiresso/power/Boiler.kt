@@ -3,6 +3,7 @@ package com.herrild.espiresso.power
 import com.herrild.espiresso.input.Thermocouple
 import com.herrild.espiresso.input.ToggleSwitch
 import com.herrild.espiresso.temp.PID
+import org.slf4j.LoggerFactory
 
 /**
  * @author jestenh@gmail.com
@@ -13,13 +14,14 @@ import com.herrild.espiresso.temp.PID
  * Boiler class contains a PID reference, and starts a thread for the PID control algorithm when initialized
  *   Temperature variables are stored in C, and
  */
-class Boiler(var brew_temp: Int = 100,
+class Boiler(var brew_temp: Int = 95,
              var steam_temp: Int = 150,
              var temp_sensor: Thermocouple,
              var power_state: Boolean = false,
              var brew_switch: ToggleSwitch) {
 
-    var pid = PID(brew_temp, 0.toFloat())
+    val logger = LoggerFactory.getLogger("Boiler")
+    var pid = PID(brew_temp)
     var currentTemp = 0.toFloat()
 
     fun init() {
@@ -79,6 +81,8 @@ class Boiler(var brew_temp: Int = 100,
      * Executes a single cycle of the default PID algorithm on the boiler's PID object
      */
     fun runPid() : Float {
-        return pid.execute(currentTemp)
+        val output = pid.execute(currentTemp)
+        logger.info("runPid() executed with result: " + output.toString())
+        return output
     }
 }

@@ -30,12 +30,12 @@ var temp_sensor = Thermocouple(gpio, RaspiPin.GPIO_13, RaspiPin.GPIO_14, RaspiPi
 var display = Display(gpio = gpio)
 //TODO: Check pins against hardware for temp up and down switches, and relays
 var pumpRelay = ToggleRelay("Pump Relay", gpio, RaspiPin.GPIO_24)
-var boilerRelay = PwmRelay("Boiler Relay", gpio, RaspiPin.GPIO_25)
+var boilerRelay = PwmRelay("Boiler Relay", gpio, RaspiPin.GPIO_26, 26)
 var brewSwitch = ToggleSwitch(gpio, RaspiPin.GPIO_29, "BrewSwitch")
 var shotSwitch = RelaySwitch(gpio, RaspiPin.GPIO_28, "ShotSwitch", pumpRelay)
 var boiler = Boiler(temp_sensor = temp_sensor, brew_switch = brewSwitch)
 var upButton = TemperatureSwitch(gpio, RaspiPin.GPIO_27, "TempUpButton", boiler, SwitchType.UP)
-var downButton = TemperatureSwitch(gpio, RaspiPin.GPIO_26, "TempDownButton", boiler, SwitchType.DOWN)
+var downButton = TemperatureSwitch(gpio, RaspiPin.GPIO_25, "TempDownButton", boiler, SwitchType.DOWN)
 // TODO: Maybe read pins into hashmap from configuration file?
 // var pinMap = HashMap<String, RaspiPin>()
 //TODO: Should create POWER switch to override remote power state change on a hardware circuit. This should prevent
@@ -50,6 +50,7 @@ fun main(args: Array<String>) {
     upButton.init()
     downButton.init()
     display.init()
+    boilerRelay.init()
 
     fixedRateTimer("Display Update Timer", true, 0.toLong(), 200.toLong()) {
         updateScreen()
@@ -172,7 +173,7 @@ fun updateBoiler() {
     logger.info("Current temperature is: " + boiler.updateTemperature() + " C")
 
     // Runs pid function, maps output onto the range of the Boiler Relay's input, and then updates the relay
-    boilerRelay.update(boiler.pid.positiveMap(boiler.runPid(), 10.toFloat(), 4000))
+    boilerRelay.update(boiler.pid.positiveMap(boiler.runPid(), 10.toFloat(), boilerRelay.range))
 
     if (brewSwitch.state) {
         boiler.pid.setTemp = boiler.brew_temp

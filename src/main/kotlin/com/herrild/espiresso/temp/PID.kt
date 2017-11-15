@@ -1,11 +1,13 @@
 package com.herrild.espiresso.temp
 
+import org.slf4j.LoggerFactory
+
 /**
  * @author jestenh@gmail.com
  * Created on 9/24/17
  */
 class PID(var setTemp: Int, var p: Float = 2.toFloat(), var i: Float = 0.toFloat(), var d: Float = 0.toFloat(), var bias: Float = 0.toFloat()) {
-
+    val logger = LoggerFactory.getLogger("PID")
     var t1 = System.currentTimeMillis()
     var t2 = System.currentTimeMillis()
     var integral = 0.toFloat()
@@ -37,18 +39,28 @@ class PID(var setTemp: Int, var p: Float = 2.toFloat(), var i: Float = 0.toFloat
         //Set error and previous error
         val pError = error
         error = setTemp - temp
+        logger.debug("PID error: " + error.toString())
 
         //Set time, previous time, and delta T
         t1 = t2
         t2 = System.currentTimeMillis()
         val deltaT = (t2 - t1)
+        logger.debug("PID Delta T: " + deltaT.toString())
 
         //Calculations
         integral += (integral * deltaT)
+        logger.debug("PID integral: " + integral.toString())
+
         derivative = (error - pError) / deltaT
+        logger.debug("PID derivative: " + derivative.toString())
+
         val out = (p * error) + (i * integral) + (d * derivative) + bias
+        logger.debug("PID out: " + out.toString())
+
         maxOut = Math.max(out, maxOut)
-        return out
+        logger.info("PID maxOut: " + maxOut.toString())
+
+        return maxOut
     }
 
     /** Maps one range onto another - meant to positiveMap the output of a PID function onto the range of the SSR's
