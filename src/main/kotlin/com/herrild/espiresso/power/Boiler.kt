@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
  * Boiler class contains a PID reference, and starts a thread for the PID control algorithm when initialized
  *   Temperature variables are stored in C, and
  */
-class Boiler(var brew_temp: Int = 95,
+class Boiler(var brew_temp: Int = 60,
              var steam_temp: Int = 150,
              var temp_sensor: Thermocouple,
              var power_state: Boolean = false,

@@ -6,14 +6,13 @@ import org.slf4j.LoggerFactory
  * @author jestenh@gmail.com
  * Created on 9/24/17
  */
-class PID(var setTemp: Int, var p: Float = 2.toFloat(), var i: Float = 0.toFloat(), var d: Float = 0.toFloat(), var bias: Float = 0.toFloat()) {
+class PID(var setTemp: Int, var p: Float = 5.2.toFloat(), var i: Float = 2.toFloat(), var d: Float = 0.toFloat(), var bias: Float = 0.toFloat()) {
     val logger = LoggerFactory.getLogger("PID")
     var t1 = System.currentTimeMillis()
     var t2 = System.currentTimeMillis()
     var integral = 0.toFloat()
     var derivative = 0.toFloat()
     var error = 0.toFloat()
-
     var maxOut = 0.toFloat()
 
     fun set(temp: Int) {
@@ -48,7 +47,7 @@ class PID(var setTemp: Int, var p: Float = 2.toFloat(), var i: Float = 0.toFloat
         logger.debug("PID Delta T: " + deltaT.toString())
 
         //Calculations
-        integral += (integral * deltaT)
+        integral += (error * deltaT)
         logger.debug("PID integral: " + integral.toString())
 
         derivative = (error - pError) / deltaT
@@ -60,7 +59,7 @@ class PID(var setTemp: Int, var p: Float = 2.toFloat(), var i: Float = 0.toFloat
         maxOut = Math.max(out, maxOut)
         logger.info("PID maxOut: " + maxOut.toString())
 
-        return maxOut
+        return out
     }
 
     /** Maps one range onto another - meant to positiveMap the output of a PID function onto the range of the SSR's
