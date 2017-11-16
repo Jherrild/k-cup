@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory
  * @author jestenh@gmail.com
  * Created on 9/24/17
  */
-class PID(var setTemp: Int, var p: Float = 5.2.toFloat(), var i: Float = 2.toFloat(), var d: Float = 0.toFloat(), var bias: Float = 0.toFloat()) {
+class PID(var setTemp: Int, var p: Float = 5.toFloat(), var i: Float = 0.2.toFloat(), var d: Float = 0.toFloat(), var bias: Float = 0.toFloat()) {
     val logger = LoggerFactory.getLogger("PID")
     var t1 = System.currentTimeMillis()
     var t2 = System.currentTimeMillis()
