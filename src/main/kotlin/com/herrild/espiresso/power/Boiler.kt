@@ -2,6 +2,7 @@ package com.herrild.espiresso.power
 
 import com.herrild.espiresso.input.Thermocouple
 import com.herrild.espiresso.input.ToggleSwitch
+import com.herrild.espiresso.output.PwmRelay
 import com.herrild.espiresso.temp.PID
 import org.slf4j.LoggerFactory
 
@@ -14,18 +15,50 @@ import org.slf4j.LoggerFactory
  * Boiler class contains a PID reference, and starts a thread for the PID control algorithm when initialized
  *   Temperature variables are stored in C, and
  */
-class Boiler(var brew_temp: Int = 60,
+class Boiler(var brew_temp: Int = 94,
              var steam_temp: Int = 150,
              var temp_sensor: Thermocouple,
              var power_state: Boolean = false,
-             var brew_switch: ToggleSwitch) {
+             var brew_switch: ToggleSwitch,
+             var boiler_relay: PwmRelay) {
 
     val logger = LoggerFactory.getLogger("Boiler")
     var pid = PID(brew_temp)
     var currentTemp = 0.toFloat()
+    var stayOn = false
+    var lastModified = System.currentTimeMillis()
 
     fun init() {
         power_state = true
+    }
+
+    private fun brew() {
+        pid.setTemp = brew_temp
+    }
+
+    private fun steam() {
+        pid.setTemp = steam_temp
+    }
+
+    fun update() {
+        com.herrild.espiresso.logger.info("Current temperature is: " + updateTemperature() + " C")
+        updatePid(brew_switch.state)
+        boiler_relay.update(pid.positiveMap(runPid(), 10.toFloat(), boiler_relay.range))
+    }
+
+    fun updatePid(state: Boolean) {
+        if (state) {
+            this.brew()
+        }else {
+            this.steam()
+        }
+    }
+
+    /**
+     * If stayOn is true, then the PID function output will be ignored, and the relay duty cycle will remain 100%
+     */
+    fun stayOn(state: Boolean) {
+        stayOn = state
     }
 
     /**
@@ -34,6 +67,7 @@ class Boiler(var brew_temp: Int = 60,
      *   current machine mode.
      */
     fun increaseTemp() {
+        lastModified = System.currentTimeMillis()
         if(brew_temp < 150) {
             if(brew_switch.state) {
                 brew_temp ++
@@ -49,6 +83,7 @@ class Boiler(var brew_temp: Int = 60,
      *   current machine mode.
      */
     fun decreaseTemp() {
+        lastModified = System.currentTimeMillis()
         if(brew_temp > 80) {
             if(brew_switch.state) {
                 brew_temp --

@@ -51,6 +51,18 @@ class Display(address: Int = 0x3c,
         display.horizontalLine(index)
     }
 
+    fun vBlock(start: Int, end: Int) {
+        for(i in start..end) {
+            vLine(i)
+        }
+    }
+
+    fun hBlock(start: Int, end: Int) {
+        for(i in start..end) {
+            hLine(i)
+        }
+    }
+
     fun hSegment(index: Int, x1: Int, x2: Int) {
         display.horizontalSegment(index, x1, x2)
     }

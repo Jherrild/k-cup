@@ -17,18 +17,18 @@ open class MomentarySwitch(gpio: GpioController, pin: Pin, name: String) {
     var gpioPin = gpio.provisionDigitalInputPin(pin, name, PinPullResistance.PULL_UP)
 
     fun init() {
-        resetModified()
         gpioPin.addListener(GpioPinListenerDigital {
             onPress()
         })
     }
 
-    open fun onPress() {
+    open fun onPress() : Long {
         logger.info(gpioPin.name + " was actuated on pin " + gpioPin.pin.name)
-        resetModified()
+        return resetModified()
     }
 
-    fun resetModified() {
+    fun resetModified() : Long {
         last_modified = System.currentTimeMillis()
+        return last_modified
     }
 }

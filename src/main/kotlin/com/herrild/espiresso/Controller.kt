@@ -33,12 +33,12 @@ var pumpRelay = ToggleRelay("Pump Relay", gpio, RaspiPin.GPIO_24)
 var boilerRelay = PwmRelay("Boiler Relay", gpio, RaspiPin.GPIO_26, 26)
 var brewSwitch = ToggleSwitch(gpio, RaspiPin.GPIO_29, "BrewSwitch")
 var shotSwitch = RelaySwitch(gpio, RaspiPin.GPIO_28, "ShotSwitch", pumpRelay)
-var boiler = Boiler(temp_sensor = temp_sensor, brew_switch = brewSwitch)
+var boiler = Boiler(temp_sensor = temp_sensor, brew_switch = brewSwitch, boiler_relay = boilerRelay)
 var upButton = TemperatureSwitch(gpio, RaspiPin.GPIO_27, "TempUpButton", boiler, SwitchType.UP)
 var downButton = TemperatureSwitch(gpio, RaspiPin.GPIO_25, "TempDownButton", boiler, SwitchType.DOWN)
 // TODO: Maybe read pins into hashmap from configuration file?
 // var pinMap = HashMap<String, RaspiPin>()
-//TODO: Should create POWER switch to override remote power state change on a hardware circuit. This should prevent
+// TODO: Should create POWER switch to override remote power state change on a hardware circuit. This should prevent
 // the boiler from being turned on, even if the boiler is "on" - this is a hardware change, and will not be reflected
 // here
 
@@ -46,11 +46,11 @@ fun main(args: Array<String>) {
     temp_sensor.init()
     brewSwitch.init()
     shotSwitch.init()
+    boilerRelay.init()
     boiler.init()
     upButton.init()
     downButton.init()
     display.init()
-    boilerRelay.init()
 
     fixedRateTimer("Display Update Timer", true, 0.toLong(), 200.toLong()) {
         updateScreen()
@@ -148,6 +148,26 @@ fun main(args: Array<String>) {
 fun updateScreen() {
     //TODO: Write centered text method in Display/SSD1306
     display.clear()
+
+    //Call different display functions based on how recently the temperature was changed
+    val currentTime = System.currentTimeMillis()
+    if( (boiler.lastModified + 3000) > currentTime ) {
+        tempAdjustScreen()
+    }else {
+        defaultScreen()
+    }
+
+    display.updateText()
+    display.hLine(18)
+    display.update()
+}
+
+fun tempAdjustScreen() {
+    display.hBlock(0,15)
+    display.write(boiler.pid.setTemp.toString(), 52, 24, 25)
+}
+
+fun defaultScreen() {
     display.write("Set: " + boiler.pid.setTemp.toString(), 5, 0, 15)
 
     // Brew mode
@@ -163,29 +183,18 @@ fun updateScreen() {
     }else { // Pulling a shot
         display.write( ((System.currentTimeMillis() - shotSwitch.last_modified) / 1000).toInt().toString(), 52, 24, 25)
     }
-
-    display.updateText()
-    display.hLine(18)
-    display.update()
 }
 
 fun updateBoiler() {
-    logger.info("Current temperature is: " + boiler.updateTemperature() + " C")
-
-    // Runs pid function, maps output onto the range of the Boiler Relay's input, and then updates the relay
-    boilerRelay.update(boiler.pid.positiveMap(boiler.runPid(), 10.toFloat(), boilerRelay.range))
-
-    if (brewSwitch.state) {
-        boiler.pid.setTemp = boiler.brew_temp
-    }else {
-        boiler.pid.setTemp = boiler.steam_temp
-    }
+    boiler.update()
 }
 
 fun controlPump() {
     if(shotSwitch.state && brewSwitch.state) {
+        boiler.stayOn(true)
         pumpRelay.on()
     }else {
+        boiler.stayOn(false)
         pumpRelay.off()
     }
 }
